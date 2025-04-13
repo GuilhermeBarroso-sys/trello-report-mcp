@@ -1,0 +1,41 @@
+{
+  "name": "trello-report-mcp",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "trello",
+    "mcp",
+    "reports",
+    "api",
+    "claude",
+    "model-context-protocol"
+  ],
+  "author": "Guilherme Barroso <https://github.com/GuilhermeBarroso-sys>",
+  "license": "ISC",
+  "description": "MCP server for generating Trello board reports by quarter or year",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GuilhermeBarroso-sys/trello-report-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/GuilhermeBarroso-sys/trello-report-mcp/issues"
+  },
+  "homepage": "https://github.com/GuilhermeBarroso-sys/trello-report-mcp#readme",
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.9.0",
+    "axios": "^1.6.5",
+    "date-fns": "^3.2.0",
+    "zod": "^3.24.2"
+  }
+}
