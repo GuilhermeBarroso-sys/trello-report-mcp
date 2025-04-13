@@ -36,6 +36,48 @@ export interface TrelloCard {
   idLabels: string[];
   shortUrl: string;
   url: string;
+  badges?: {
+    attachments: number;
+    checkItems: number;
+    checkItemsChecked: number;
+    comments: number;
+    description: boolean;
+    due?: string;
+    dueComplete?: boolean;
+  };
+}
+
+export interface TrelloComment {
+  id: string;
+  idMemberCreator: string;
+  data: {
+    text: string;
+    card: {
+      id: string;
+      name: string;
+    };
+  };
+  date: string;
+  memberCreator: {
+    id: string;
+    fullName: string;
+    username: string;
+  };
+}
+
+export interface TrelloChecklist {
+  id: string;
+  name: string;
+  idCard: string;
+  checkItems: TrelloCheckItem[];
+}
+
+export interface TrelloCheckItem {
+  id: string;
+  name: string;
+  state: "complete" | "incomplete";
+  idChecklist: string;
+  pos: number;
 }
 
 export interface TrelloLabel {
@@ -105,12 +147,19 @@ export interface BoardActivity {
   membersActive: Map<string, number>;
   listActivity: Map<string, number>;
   cardFlow: Map<string, Map<string, number>>;
+  // Card-focused metrics
+  cardsByLabel: Map<string, TrelloCard[]>;
+  topCards: TrelloCard[];
+  completedCards: TrelloCard[];
+  inProgressCards: TrelloCard[];
+  cardChecklists: Map<string, TrelloChecklist[]>;
 }
 
 export interface ReportOptions {
   boardId?: string;
   boardName?: string;
   period: ReportPeriod;
+  format?: "summary" | "full"; // Default is "summary"
 }
 
 export interface ReportResult {

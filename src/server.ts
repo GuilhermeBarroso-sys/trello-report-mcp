@@ -69,8 +69,14 @@ export function createTrelloMCPServer(): McpServer {
             .describe("Year for the report (defaults to current year if not provided)"),
         })
         .describe("Report period"),
+      format: z
+        .enum(["summary", "full"])
+        .optional()
+        .describe(
+          "Report format: 'summary' for concise insights or 'full' for detailed report (default: 'full')"
+        ),
     },
-    async ({ boardId, boardName, period }) => {
+    async ({ boardId, boardName, period, format = "full" }) => {
       try {
         // Validate that either boardId or boardName is provided
         if (!boardId && !boardName) {
@@ -84,6 +90,7 @@ export function createTrelloMCPServer(): McpServer {
             type: period.type as ReportPeriod["type"],
             year: period.year || new Date().getFullYear(),
           },
+          format,
         });
 
         return {

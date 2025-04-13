@@ -22,17 +22,28 @@ import {
   calculateBoardActivity,
   findMostActiveList,
   findMostActiveMembers,
+  groupCardsByLabel,
+  findTopCards,
+  findCompletedCards,
+  findInProgressCards,
+  generateWorkSummary,
+  generateReportSummary,
 } from "../trello/utils";
 
 /**
  * Generate a report for a Trello board by quarter or year
  */
 export async function generateReport(options: ReportOptions): Promise<ReportResult> {
-  const { boardId, boardName, period } = options;
+  const { boardId, boardName, period, format = "full" } = options;
 
   // Validate period
   if (!period || !period.type || !period.year) {
     throw new Error("Invalid period specified. Must include type and year.");
+  }
+
+  // Validate format
+  if (format !== "summary" && format !== "full") {
+    throw new Error("Invalid format specified. Must be 'summary' or 'full'.");
   }
 
   // Get board ID (either directly or by searching for board name)
@@ -63,18 +74,53 @@ export async function generateReport(options: ReportOptions): Promise<ReportResu
   // Calculate activity metrics
   const activity = calculateBoardActivity(lists, cards, actions);
 
-  // Generate markdown report
-  const markdown = generateMarkdownReport(
-    boardInfo,
-    period,
-    dateRange,
-    lists,
-    cards,
-    members,
-    labels,
-    actions,
-    activity
-  );
+  // Process cards for enhanced report
+  activity.cardsByLabel = groupCardsByLabel(cards, labels);
+  activity.topCards = findTopCards(cards, actions, 15); // Increased from 10 to 15 cards
+  activity.completedCards = findCompletedCards(cards, actions);
+  activity.inProgressCards = findInProgressCards(cards, lists);
+
+  // Fetch additional card details (checklists) for top cards
+  // Increased from 5 to 15 cards for better coverage
+  for (const card of activity.topCards.slice(0, 15)) {
+    try {
+      const checklists = await trelloApi.getCardChecklists(card.id);
+      activity.cardChecklists.set(card.id, checklists);
+    } catch (error) {
+      console.error(`Error fetching details for card ${card.id}:`, error);
+    }
+  }
+
+  // Generate markdown report based on format
+  let markdown: string;
+
+  if (format === "summary") {
+    // Generate summary report
+    markdown = generateReportSummary(
+      boardInfo,
+      period,
+      dateRange,
+      lists,
+      cards,
+      members,
+      labels,
+      actions,
+      activity
+    );
+  } else {
+    // Generate full detailed report
+    markdown = generateMarkdownReport(
+      boardInfo,
+      period,
+      dateRange,
+      lists,
+      cards,
+      members,
+      labels,
+      actions,
+      activity
+    );
+  }
 
   return {
     boardInfo,
@@ -270,6 +316,141 @@ function generateMarkdownReport(
     } else {
       markdown += `No significant card flow detected in this period.\n\n`;
     }
+  }
+
+  // Work Summary Section
+  markdown += `## Work Summary\n\n`;
+  markdown += generateWorkSummary(activity.completedCards, labels, activity.cardsByLabel);
+  markdown += `\n\n`;
+
+  // Completed Features Section
+  if (activity.completedCards.length > 0) {
+    markdown += `## Completed Features\n\n`;
+
+    // Group completed cards by label
+    const completedCardsByLabel = new Map<string, TrelloCard[]>();
+
+    labels.forEach((label) => {
+      if (!label.name) return; // Skip labels without names
+
+      const labelCards = activity.cardsByLabel.get(label.id) || [];
+      const completedLabelCards = labelCards.filter((card) =>
+        activity.completedCards.some((c) => c.id === card.id)
+      );
+
+      if (completedLabelCards.length > 0) {
+        completedCardsByLabel.set(label.id, completedLabelCards);
+      }
+    });
+
+    // Display completed cards by label
+    labels.forEach((label) => {
+      const completedLabelCards = completedCardsByLabel.get(label.id) || [];
+
+      if (completedLabelCards.length > 0 && label.name) {
+        markdown += `### ${label.name} (${completedLabelCards.length})\n\n`;
+
+        completedLabelCards.forEach((card) => {
+          markdown += `- **${card.name}**`;
+
+          // Add card description (truncated if too long)
+          if (card.desc) {
+            const shortDesc =
+              card.desc.length > 100 ? card.desc.substring(0, 100) + "..." : card.desc;
+            markdown += `: ${shortDesc}`;
+          }
+
+          markdown += ` [View Card](${card.url})\n`;
+        });
+
+        markdown += `\n`;
+      }
+    });
+  }
+
+  // Top Cards Section
+  if (activity.topCards.length > 0) {
+    markdown += `## Key Cards\n\n`;
+    markdown += `These cards had the most activity during this period:\n\n`;
+
+    activity.topCards.slice(0, 10).forEach((card, index) => {
+      markdown += `### ${index + 1}. ${card.name}\n\n`;
+
+      // Card details
+      markdown += `- **List**: ${lists.find((l) => l.id === card.idList)?.name || "Unknown"}\n`;
+
+      // Card members
+      const cardMembers = members.filter((m) => card.idMembers.includes(m.id));
+      if (cardMembers.length > 0) {
+        markdown += `- **Assigned to**: ${cardMembers.map((m) => m.fullName).join(", ")}\n`;
+      }
+
+      // Card labels
+      const cardLabels = labels.filter((l) => card.idLabels.includes(l.id));
+      if (cardLabels.length > 0) {
+        markdown += `- **Labels**: ${cardLabels.map((l) => l.name || l.color).join(", ")}\n`;
+      }
+
+      // Due date
+      if (card.due) {
+        const dueDate = new Date(card.due);
+        markdown += `- **Due**: ${dueDate.toLocaleDateString()} ${
+          card.dueComplete ? "(Completed)" : ""
+        }\n`;
+      }
+
+      // Description
+      if (card.desc) {
+        markdown += `\n**Description**:\n\n${card.desc}\n\n`;
+      }
+
+      markdown += `[View Card on Trello](${card.url})\n\n`;
+    });
+  }
+
+  // In Progress Work Section
+  if (activity.inProgressCards.length > 0) {
+    markdown += `## Work In Progress\n\n`;
+
+    // Group in-progress cards by list
+    const cardsByList = new Map<string, TrelloCard[]>();
+
+    lists.forEach((list) => {
+      const listCards = activity.inProgressCards.filter((card) => card.idList === list.id);
+      if (listCards.length > 0) {
+        cardsByList.set(list.id, listCards);
+      }
+    });
+
+    // Display in-progress cards by list
+    lists.forEach((list) => {
+      const listCards = cardsByList.get(list.id) || [];
+
+      if (listCards.length > 0) {
+        markdown += `### ${list.name} (${listCards.length})\n\n`;
+
+        listCards.forEach((card) => {
+          // Card labels
+          const cardLabels = labels.filter((l) => card.idLabels.includes(l.id));
+          const labelText =
+            cardLabels.length > 0
+              ? ` [${cardLabels.map((l) => l.name || l.color).join(", ")}]`
+              : "";
+
+          markdown += `- **${card.name}**${labelText}`;
+
+          // Due date
+          if (card.due) {
+            const dueDate = new Date(card.due);
+            markdown += ` (Due: ${dueDate.toLocaleDateString()})`;
+          }
+
+          markdown += `\n`;
+        });
+
+        markdown += `\n`;
+      }
+    });
   }
 
   // Conclusion

@@ -131,6 +131,9 @@ Generates a detailed report for a Trello board by quarter or year.
 - `period`: Report period
   - `type`: Period type (Q1, Q2, Q3, Q4, or year)
   - `year`: Year for the report (defaults to current year if not provided)
+- `format`: Report format (optional)
+  - `"full"`: Detailed report with all sections (default)
+  - `"summary"`: Concise report with key insights and recommendations
 
 **Example:**
 ```json

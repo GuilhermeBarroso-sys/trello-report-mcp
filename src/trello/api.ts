@@ -10,6 +10,8 @@ import {
   TrelloMember,
   TrelloLabel,
   TrelloAction,
+  TrelloComment,
+  TrelloChecklist,
   DateRange,
 } from "./types";
 
@@ -95,12 +97,21 @@ export class TrelloApiClient {
   }
 
   /**
-   * Get all cards on a board
+   * Get all cards on a board with detailed information
    */
   async getCards(boardId: string): Promise<TrelloCard[]> {
     return this.get<TrelloCard[]>(`/boards/${boardId}/cards`, {
       filter: "all",
+      fields: "all",
+      badges: "true",
     });
+  }
+
+  /**
+   * Get checklists for a specific card
+   */
+  async getCardChecklists(cardId: string): Promise<TrelloChecklist[]> {
+    return this.get<TrelloChecklist[]>(`/cards/${cardId}/checklists`);
   }
 
   /**
