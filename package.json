@@ -1,5 +1,5 @@
 {
-  "name": "trello-report-mcp",
+  "name": "@trello-report-mcp/trello-report",
   "version": "1.0.0",
   "main": "dist/index.js",
   "scripts": {
