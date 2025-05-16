@@ -2,7 +2,7 @@
  * Tool for generating Trello board reports by quarter or year
  */
 
-import { trelloApi } from "../trello/api";
+import { trelloApi } from "../trello/api.js";
 import {
   ReportOptions,
   ReportResult,
@@ -14,7 +14,7 @@ import {
   TrelloLabel,
   TrelloAction,
   BoardActivity,
-} from "../trello/types";
+} from "../trello/types.js";
 import {
   getDateRangeForPeriod,
   formatDate,
@@ -28,7 +28,7 @@ import {
   findInProgressCards,
   generateWorkSummary,
   generateReportSummary,
-} from "../trello/utils";
+} from "../trello/utils.js";
 
 /**
  * Generate a report for a Trello board by quarter or year
@@ -224,7 +224,7 @@ function generateMarkdownReport(
     markdown += `| Member | Activity |\n`;
     markdown += `|--------|----------|\n`;
 
-    mostActiveMembers.forEach(({ id, count }) => {
+    mostActiveMembers.forEach(({ id, count }: { id: string; count: number }) => {
       const member = members.find((m) => m.id === id);
       if (member) {
         markdown += `| ${member.fullName} | ${count} |\n`;
@@ -243,7 +243,7 @@ function generateMarkdownReport(
     });
 
     activeCards.forEach((card) => {
-      card.idLabels.forEach((labelId) => {
+      card.idLabels.forEach((labelId: string) => {
         labelUsage.set(labelId, (labelUsage.get(labelId) || 0) + 1);
       });
     });
@@ -276,9 +276,9 @@ function generateMarkdownReport(
 
     // Find lists with card movements
     const listsWithMovements: TrelloList[] = [];
-    activity.cardFlow.forEach((flowMap, sourceListId) => {
+    activity.cardFlow.forEach((flowMap: Map<string, number>, sourceListId: string) => {
       let hasMovements = false;
-      flowMap.forEach((count) => {
+      flowMap.forEach((count: number) => {
         if (count > 0) hasMovements = true;
       });
 
@@ -294,14 +294,14 @@ function generateMarkdownReport(
         if (!flowMap) return;
 
         let totalOutflow = 0;
-        flowMap.forEach((count) => {
+        flowMap.forEach((count: number) => {
           totalOutflow += count;
         });
 
         if (totalOutflow > 0) {
           markdown += `### From "${sourceList.name}"\n\n`;
 
-          flowMap.forEach((count, targetListId) => {
+          flowMap.forEach((count: number, targetListId: string) => {
             if (count > 0) {
               const targetList = lists.find((l) => l.id === targetListId);
               if (targetList) {
@@ -334,8 +334,8 @@ function generateMarkdownReport(
       if (!label.name) return; // Skip labels without names
 
       const labelCards = activity.cardsByLabel.get(label.id) || [];
-      const completedLabelCards = labelCards.filter((card) =>
-        activity.completedCards.some((c) => c.id === card.id)
+      const completedLabelCards = labelCards.filter((card: TrelloCard) =>
+        activity.completedCards.some((c: TrelloCard) => c.id === card.id)
       );
 
       if (completedLabelCards.length > 0) {
@@ -373,7 +373,7 @@ function generateMarkdownReport(
     markdown += `## Key Cards\n\n`;
     markdown += `These cards had the most activity during this period:\n\n`;
 
-    activity.topCards.slice(0, 10).forEach((card, index) => {
+    activity.topCards.slice(0, 10).forEach((card: TrelloCard, index: number) => {
       markdown += `### ${index + 1}. ${card.name}\n\n`;
 
       // Card details
@@ -416,7 +416,7 @@ function generateMarkdownReport(
     const cardsByList = new Map<string, TrelloCard[]>();
 
     lists.forEach((list) => {
-      const listCards = activity.inProgressCards.filter((card) => card.idList === list.id);
+      const listCards = activity.inProgressCards.filter((card: TrelloCard) => card.idList === list.id);
       if (listCards.length > 0) {
         cardsByList.set(list.id, listCards);
       }

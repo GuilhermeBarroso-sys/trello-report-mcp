@@ -2,8 +2,8 @@
  * Tool for listing all Trello boards
  */
 
-import { trelloApi } from "../trello/api";
-import { TrelloBoard } from "../trello/types";
+import { trelloApi } from "../trello/api.js";
+import { TrelloBoard } from "../trello/types.js";
 
 /**
  * List all Trello boards with optional search filter
@@ -19,7 +19,7 @@ export async function listBoards(searchTerm?: string): Promise<TrelloBoard[]> {
 
   // Filter boards by name (case-insensitive)
   const normalizedSearchTerm = searchTerm.toLowerCase();
-  return boards.filter((board) => board.name.toLowerCase().includes(normalizedSearchTerm));
+  return boards.filter((board: TrelloBoard) => board.name.toLowerCase().includes(normalizedSearchTerm));
 }
 
 /**

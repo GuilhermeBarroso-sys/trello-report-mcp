@@ -13,7 +13,7 @@ import {
   TrelloComment,
   TrelloChecklist,
   DateRange,
-} from "./types";
+} from "./types.js";
 
 // Trello API base URL
 const TRELLO_API_BASE_URL = "https://api.trello.com/1";

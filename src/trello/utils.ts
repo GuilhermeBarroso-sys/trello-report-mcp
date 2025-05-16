@@ -15,7 +15,7 @@ import {
   TrelloBoard,
   TrelloMember,
   BoardActivity,
-} from "./types";
+} from "./types.js";
 
 /**
  * Get date range for a report period
@@ -187,7 +187,7 @@ export function findMostActiveList(
   let maxActivity = 0;
   let mostActiveListId: string | null = null;
 
-  activity.listActivity.forEach((count, listId) => {
+  activity.listActivity.forEach((count: number, listId: string) => {
     if (count > maxActivity) {
       maxActivity = count;
       mostActiveListId = listId;
@@ -208,7 +208,7 @@ export function findMostActiveMembers(
 ): Array<{ id: string; count: number }> {
   const members: Array<{ id: string; count: number }> = [];
 
-  activity.membersActive.forEach((count, id) => {
+  activity.membersActive.forEach((count: number, id: string) => {
     members.push({ id, count });
   });
 
@@ -231,7 +231,7 @@ export function groupCardsByLabel(
 
   // Add cards to their respective label groups
   cards.forEach((card) => {
-    card.idLabels.forEach((labelId) => {
+    card.idLabels.forEach((labelId: string) => {
       const labelCards = cardsByLabel.get(labelId) || [];
       labelCards.push(card);
       cardsByLabel.set(labelId, labelCards);
@@ -435,7 +435,7 @@ export function generateReportSummary(
     summary += `## Key Focus Areas\n\n`;
     summary += `The team focused primarily on these items:\n\n`;
 
-    activity.topCards.slice(0, 3).forEach((card, index) => {
+    activity.topCards.slice(0, 3).forEach((card: TrelloCard, index: number) => {
       const cardList = lists.find((l) => l.id === card.idList);
       const cardLabels = labels.filter((l) => card.idLabels.includes(l.id));
       const labelText =
@@ -476,7 +476,7 @@ export function generateReportSummary(
     // Group by list
     const inProgressByList = new Map<string, TrelloCard[]>();
     lists.forEach((list) => {
-      const listCards = activity.inProgressCards.filter((card) => card.idList === list.id);
+      const listCards = activity.inProgressCards.filter((card: TrelloCard) => card.idList === list.id);
       if (listCards.length > 0) {
         inProgressByList.set(list.id, listCards);
       }

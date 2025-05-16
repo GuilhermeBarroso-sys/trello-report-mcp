@@ -1,3 +1,4 @@
+
 /**
  * MCP server implementation for Trello API
  */
@@ -5,9 +6,9 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-import { listBoards, formatBoardsAsMarkdown } from "./tools/listBoards";
-import { generateReport } from "./tools/generateReport";
-import { ReportPeriod } from "./trello/types";
+import { listBoards, formatBoardsAsMarkdown } from "./tools/listBoards.js";
+import { generateReport } from "./tools/generateReport.js";
+import { ReportPeriod } from "./trello/types.js";
 
 /**
  * Create and configure the Trello MCP server
