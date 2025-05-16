@@ -69,7 +69,7 @@ export function createTrelloMCPServer(): McpServer {
             .optional()
             .describe("Year for the report (defaults to current year if not provided)"),
         })
-        .describe("Report period"),
+        .describe(`Report period in a JSON format. e.g: { "type": "Q4","year": 2024 }`),
       format: z
         .enum(["summary", "full"])
         .optional()
