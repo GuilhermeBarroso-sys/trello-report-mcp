@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 /**
  * Entry point for the Trello MCP server
  */
