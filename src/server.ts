@@ -1,4 +1,4 @@
-
+#!/usr/bin/env node
 /**
  * MCP server implementation for Trello API
  */
