@@ -1,14 +1,11 @@
 {
-  "name": "@trello-report-mcp/trello-report",
+  "name": "GuilhermeBarroso-sys/trello-report-mcp",
   "version": "1.0.0",
   "main": "dist/index.js",
   "type": "module",
   "scripts": {
     "build": "tsc && shx chmod +x dist/*.js",
-    "prepare": "npm run build",
-    "start": "node dist/index.js",
-    "dev": "ts-node src/index.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "prepare": "npm run build"
   },
   "bin": {
     "trello-report-mcp": "dist/index.js"
