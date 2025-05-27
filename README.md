@@ -197,7 +197,6 @@ Example prompts for the AI:
 trello-report-mcp/
 ├── src/
 │   ├── index.ts                 # Main entry point
-│   ├── server.ts                # MCP server definition
 │   ├── trello/
 │   │   ├── api.ts               # Trello API client
 │   │   ├── types.ts             # TypeScript interfaces for Trello objects
